@@ -354,11 +354,13 @@ Async collaboration with formal handoff and diff-based review.
 
 | Category | Completed | Remaining |
 |----------|-----------|-----------|
-| **Core** | 6 | 4 |
-| **Markdown** | 11 | 5 |
-| **Styling** | 2 | 1 |
-| **Agentic** | 0 | 6 |
-| **Infra** | 1 | 2 |
+| **Core Infrastructure** | 6 | - |
+| **Preview Modes** | 5 | - |
+| **Markdown Rendering** | 11 | 5 |
+| **Styling** | 4 | 1 |
+| **Core Enhancements** | - | 5 |
+| **Agentic** | - | 6 |
+| **Infrastructure** | - | 2 |
 
 ### Recommended Next Steps
 

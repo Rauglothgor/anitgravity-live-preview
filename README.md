@@ -12,6 +12,16 @@ A true **Obsidian-style inline markdown live preview** extension for Google Anti
 - **Syntax hiding** — `# Heading` becomes invisible `Heading` styled as h1
 - **No split panels** — Everything in one clean view
 
+### 🔄 Preview Modes
+
+Three viewing modes, just like Obsidian:
+
+- **Source Mode** — Raw markdown, no rendering
+- **Live Preview Mode** — Cursor-aware rendering (default)
+- **Reading Mode** — Fully rendered, no raw syntax
+
+Toggle with `Ctrl+E` (Windows/Linux) or `Cmd+E` (Mac)
+
 ### 📝 Supported Markdown
 
 - **Headings** (h1-h6) with proper styling and sizing
@@ -22,10 +32,12 @@ A true **Obsidian-style inline markdown live preview** extension for Google Anti
 - **Blockquotes** with left border styling
 - **Task lists** with interactive checkboxes
 - **Strikethrough** text
-- **Subscript** and superscript
 - **Lists** (ordered and unordered)
 - **Code blocks** with language support
 - **Horizontal rules**
+- **Wikilinks** — `[[Page]]` and `[[Page|Display Text]]` with click-to-navigate
+- **Math (KaTeX)** — Inline `$E=mc^2$` and block `$$...$$` expressions
+- **Callouts/Admonitions** — `> [!NOTE]`, `> [!WARNING]`, `> [!TIP]`, etc.
 
 ### 🎨 Design & UX
 
@@ -99,7 +111,8 @@ Open VS Code/Antigravity settings and customize:
 ```json
 {
   "antigravity-live-preview.enabled": true,
-  "antigravity-live-preview.theme": "antigravity-dark",
+  "antigravity-live-preview.mode": "live-preview",
+  "antigravity-live-preview.theme": "obsidian-dark",
   "antigravity-live-preview.debounceMs": 150,
   "antigravity-live-preview.maxFileSize": 1000000,
   "antigravity-live-preview.renderImages": true,
@@ -108,12 +121,17 @@ Open VS Code/Antigravity settings and customize:
 }
 ```
 
+**Mode options:**
+- `source` — Raw markdown only
+- `live-preview` — Cursor-aware rendering (default)
+- `reading` — Fully rendered view
+
 ## How It Works
 
 ### Architecture
 
 ```
-Google Antigravity (VS Code)
+VS Code / Google Antigravity
     ↓
 Extension Handler (src/extension.ts)
     ↓
@@ -121,8 +139,9 @@ Webview Panel
     ↓
 CodeMirror 6 Editor
     ├─ Parser: markdown-it
+    ├─ Math: KaTeX
     ├─ Decorations: Syntax hiding + formatting
-    └─ Widgets: Inline rendering (headings, links, images, etc)
+    └─ Widgets: Headings, links, images, callouts, math, wikilinks
 ```
 
 ### Decoration Pipeline
@@ -202,53 +221,64 @@ npm run typecheck
 
 ## Advanced Features
 
+### Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl+E` / `Cmd+E` | Cycle preview modes (Source → Live → Reading) |
+| `Ctrl+Shift+L` / `Cmd+Shift+L` | Toggle live preview panel |
+| `Ctrl+Z` / `Cmd+Z` | Undo |
+| `Ctrl+Shift+Z` / `Cmd+Shift+Z` | Redo |
+
+### Wikilinks
+
+Click any `[[wikilink]]` to navigate:
+- Opens existing file if found in workspace
+- Creates new file with `# Title` header if not found
+
+Supports display text: `[[actual-page|Display Text]]`
+
+### Callouts
+
+Supported callout types with unique icons and colors:
+
+```markdown
+> [!NOTE] Optional title
+> Content here
+
+> [!TIP] Helpful hint
+> Content here
+
+> [!WARNING] Be careful
+> Content here
+
+> [!DANGER] Critical warning
+> Content here
+```
+
+Other types: `INFO`, `TODO`, `ABSTRACT`, `SUCCESS`, `QUESTION`, `FAILURE`, `BUG`, `EXAMPLE`, `QUOTE`
+
+### Math (KaTeX)
+
+Inline math with single dollar signs:
+```markdown
+The equation $E = mc^2$ changed physics.
+```
+
+Block math with double dollar signs:
+```markdown
+$$
+\int_0^\infty e^{-x^2} dx = \frac{\sqrt{\pi}}{2}
+$$
+```
+
 ### Custom Syntax Support
 
 To add support for additional markdown syntax:
 
 1. Add parsing logic to `decorateLine()` in `obsidianLivePreviewEditor.ts`
 2. Create a new widget class extending `WidgetType` if needed
-3. Register decoration in `computeDecorations()`
-
-Example: Adding support for custom `[[wikilinks]]`:
-
-```typescript
-// Add to ObsidianLivePreviewPlugin class
-private decorateWikilinks(line: string, lineStartPos: number): any[] {
-  const wikiRegex = /\[\[([^\]]+)\]\]/g;
-  let match;
-  const decorations: any[] = [];
-
-  while ((match = wikiRegex.exec(line)) !== null) {
-    const linkStart = lineStartPos + match.index;
-    const linkEnd = linkStart + match[0].length;
-    const linkText = match[1];
-
-    decorations.push(
-      Decoration.replace({
-        widget: new WikiLinkWidget(linkText),
-      }).range(linkStart, linkEnd)
-    );
-  }
-
-  return decorations;
-}
-
-// Custom widget
-class WikiLinkWidget extends WidgetType {
-  constructor(readonly text: string) {
-    super();
-  }
-
-  toDOM() {
-    const a = document.createElement('a');
-    a.className = 'cm-wikilink';
-    a.href = `#${this.text.toLowerCase().replace(/\s+/g, '-')}`;
-    a.textContent = this.text;
-    return a;
-  }
-}
-```
+3. Add CSS styling in `media/editor.css`
 
 ### Performance Tuning
 
@@ -321,27 +351,37 @@ To customize colors, edit `media/editor.css`:
 | Syntax hiding | ✅ | ✅ |
 | Cursor-aware rendering | ✅ | ✅ |
 | Single view editing | ✅ | ✅ |
-| Wikilinks | ✅ | 🔲 (Custom plugin ready) |
-| Embeds | ✅ | 🔲 (Custom plugin ready) |
-| Math rendering | ✅ | 🔲 (Can extend) |
-| Footnotes | ✅ | 🔲 (Can extend) |
+| Mode cycling (Source/Live/Reading) | ✅ | ✅ |
+| Wikilinks | ✅ | ✅ |
+| Math rendering (KaTeX) | ✅ | ✅ |
+| Callouts/Admonitions | ✅ | ✅ |
+| Embeds | ✅ | 🔲 (Planned) |
+| Footnotes | ✅ | 🔲 (Planned) |
+| Tables | ✅ | 🔲 (Planned) |
+| Mermaid diagrams | ✅ | 🔲 (Planned) |
 | VS Code integration | ❌ | ✅ |
-| Customizable | 🔲 | ✅ |
+| Undo/Redo support | ✅ | ✅ |
 
 ## Contributing
 
-Contributions welcome! Areas for enhancement:
+Contributions welcome!
 
-- [ ] Math rendering (KaTeX/MathJax)
-- [ ] Footnotes and references
-- [ ] Wikilinks and backlinks
-- [ ] Embeds support
-- [ ] Syntax highlighting in code blocks
+### Completed Features
+- [x] Math rendering (KaTeX)
+- [x] Wikilinks with navigation
+- [x] Callouts/Admonitions
+- [x] Preview mode cycling (Source/Live/Reading)
+- [x] Undo/Redo support
+
+### Planned Enhancements
 - [ ] Table rendering
+- [ ] Syntax highlighting in code blocks
+- [ ] Embeds support (`![[file]]`)
+- [ ] Footnotes and references
 - [ ] Diagram support (Mermaid)
-- [ ] Dark/light theme toggle
-- [ ] Margin annotations
-- [ ] Word count and statistics
+- [ ] Scroll sync between editors
+- [ ] Export to HTML/PDF
+- [ ] Custom CSS support
 
 ## License
 
@@ -351,8 +391,9 @@ MIT © 2025
 
 - **CodeMirror 6** — Powerful editor toolkit
 - **markdown-it** — Markdown parser
-- **Obsidian** — Design inspiration
-- **Google Antigravity** — Platform
+- **KaTeX** — Fast math typesetting
+- **Obsidian** — Design inspiration (Shimmering Focus theme)
+- **VS Code / Google Antigravity** — Platform
 
 ## Support
 

@@ -8,10 +8,18 @@ import * as vscode from 'vscode';
 suite('Extension Test Suite', () => {
     vscode.window.showInformationMessage('Start all tests.');
 
-    const extensionId = 'antigravity.obsidian-live-preview-antigravity';
+    const extensionId = 'antigravity.antigravity-live-preview';
 
     suiteSetup(async () => {
+        // Wait a bit for extension host to stabilize
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
         const extension = vscode.extensions.getExtension(extensionId);
+        // Debugging help
+        if (!extension) {
+            console.log('Available extensions:', vscode.extensions.all.map(e => e.id));
+        }
+
         assert.ok(extension, `Extension ${extensionId} should be present`);
         if (!extension.isActive) {
             await extension.activate();
@@ -26,9 +34,13 @@ suite('Extension Test Suite', () => {
     test('Commands should be registered', async () => {
         const commands = await vscode.commands.getCommands(true);
         const expectedCommands = [
-            'obsidian-live-preview.enable',
-            'obsidian-live-preview.disable',
-            'obsidian-live-preview.toggle'
+            'antigravity-live-preview.enable',
+            'antigravity-live-preview.disable',
+            'antigravity-live-preview.toggle',
+            'antigravity-live-preview.cycleMode',
+            'antigravity-live-preview.setSourceMode',
+            'antigravity-live-preview.setLivePreviewMode',
+            'antigravity-live-preview.setReadingMode'
         ];
 
         expectedCommands.forEach(cmd => {

@@ -498,6 +498,41 @@ body {
 }
 
 /* ==========================================================================
+   Wikilinks - [[Page Name]] style
+   ========================================================================== */
+
+.cm-wikilink {
+  color: var(--sf-accent-tertiary);
+  text-decoration: none;
+  cursor: pointer;
+  background: linear-gradient(
+    to bottom,
+    transparent 60%,
+    color-mix(in srgb, var(--sf-accent-tertiary) 20%, transparent) 60%
+  );
+  padding: 0 0.1em;
+  border-radius: 2px;
+  transition: all var(--sf-transition-fast);
+}
+
+.cm-wikilink:hover {
+  background: color-mix(in srgb, var(--sf-accent-tertiary) 25%, transparent);
+  color: var(--sf-accent-tertiary);
+}
+
+.cm-wikilink::before {
+  content: "[[";
+  opacity: 0.4;
+  font-size: 0.85em;
+}
+
+.cm-wikilink::after {
+  content: "]]";
+  opacity: 0.4;
+  font-size: 0.85em;
+}
+
+/* ==========================================================================
    Images - Enhanced with Captions
    ========================================================================== */
 

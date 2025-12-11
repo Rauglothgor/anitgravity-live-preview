@@ -2,15 +2,15 @@
  * Webview Editor Script
  *
  * Runs in the webview context and manages the CodeMirror 6 editor
- * with Obsidian-style live preview rendering.
+ * with Antigravity-style live preview rendering.
  */
 
 import { EditorView } from '@codemirror/view';
-import { createObsidianLivePreviewEditor, getEditorContent, setEditorContent } from '../editor/obsidianLivePreviewEditor';
+import { createObsidianLivePreviewEditor, getEditorContent, setEditorContent, setEditorMode, PreviewMode } from '../editor/obsidianLivePreviewEditor';
 
 declare global {
   interface Window {
-    initializeEditor: (content: string) => void;
+    initializeEditor: (content: string, mode?: PreviewMode) => void;
     acquireVsCodeApi: () => {
       postMessage: (message: unknown) => void;
       getState: () => unknown;
@@ -29,7 +29,7 @@ const vscode = window.acquireVsCodeApi();
 /**
  * Initialize the editor in the webview
  */
-window.initializeEditor = function (initialContent: string) {
+window.initializeEditor = function (initialContent: string, initialMode: PreviewMode = 'live-preview') {
   const editorContainer = document.getElementById('editor');
   if (!editorContainer) {
     console.error('Editor container not found');
@@ -40,6 +40,7 @@ window.initializeEditor = function (initialContent: string) {
     // Create the editor
     editorView = createObsidianLivePreviewEditor(editorContainer, initialContent, {
       theme: 'dark',
+      mode: initialMode,
     });
 
     // Setup change listener using EditorView.updateListener
@@ -56,6 +57,15 @@ window.initializeEditor = function (initialContent: string) {
           });
         }
       }, UPDATE_DEBOUNCE);
+    });
+
+    // Listen for wikilink clicks and forward to extension
+    document.addEventListener('wikilink-click', (e: Event) => {
+      const customEvent = e as CustomEvent;
+      vscode.postMessage({
+        command: 'openWikilink',
+        target: customEvent.detail.target,
+      });
     });
 
     // Notify VS Code we're ready
@@ -76,14 +86,23 @@ window.initializeEditor = function (initialContent: string) {
  */
 window.addEventListener('message', (event) => {
   const message = event.data;
-  if (message.command === 'updateContent') {
-    if (editorView) {
-      const currentContent = getEditorContent(editorView);
-      // Only update if content actually changed
-      if (currentContent !== message.content) {
-        setEditorContent(editorView, message.content);
+
+  switch (message.command) {
+    case 'updateContent':
+      if (editorView) {
+        const currentContent = getEditorContent(editorView);
+        // Only update if content actually changed
+        if (currentContent !== message.content) {
+          setEditorContent(editorView, message.content);
+        }
       }
-    }
+      break;
+
+    case 'setMode':
+      if (editorView && message.mode) {
+        setEditorMode(editorView, message.mode as PreviewMode);
+      }
+      break;
   }
 });
 

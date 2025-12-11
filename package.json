@@ -1,8 +1,8 @@
 {
-  "name": "obsidian-live-preview-antigravity",
+  "name": "antigravity-live-preview",
   "publisher": "antigravity",
-  "displayName": "Obsidian Live Preview for Antigravity",
-  "description": "True Obsidian-style inline markdown live preview with syntax hiding and instant rendering",
+  "displayName": "Antigravity Live Preview",
+  "description": "True inline markdown live preview with syntax hiding and instant rendering",
   "version": "1.0.0",
   "license": "MIT",
   "engines": {
@@ -14,7 +14,7 @@
   ],
   "keywords": [
     "markdown",
-    "obsidian",
+    "antigravity",
     "live-preview",
     "wysiwyg",
     "editor"
@@ -26,36 +26,73 @@
   "contributes": {
     "commands": [
       {
-        "command": "obsidian-live-preview.enable",
-        "title": "Enable Obsidian Live Preview"
+        "command": "antigravity-live-preview.enable",
+        "title": "Enable Antigravity Live Preview"
       },
       {
-        "command": "obsidian-live-preview.disable",
-        "title": "Disable Obsidian Live Preview"
+        "command": "antigravity-live-preview.disable",
+        "title": "Disable Antigravity Live Preview"
       },
       {
-        "command": "obsidian-live-preview.toggle",
-        "title": "Toggle Obsidian Live Preview"
+        "command": "antigravity-live-preview.toggle",
+        "title": "Toggle Antigravity Live Preview"
+      },
+      {
+        "command": "antigravity-live-preview.cycleMode",
+        "title": "Cycle Preview Mode (Source → Live → Reading)"
+      },
+      {
+        "command": "antigravity-live-preview.setSourceMode",
+        "title": "Set Source Mode (Raw Markdown)"
+      },
+      {
+        "command": "antigravity-live-preview.setLivePreviewMode",
+        "title": "Set Live Preview Mode"
+      },
+      {
+        "command": "antigravity-live-preview.setReadingMode",
+        "title": "Set Reading Mode (Fully Rendered)"
       }
     ],
     "keybindings": [
       {
-        "command": "obsidian-live-preview.toggle",
+        "command": "antigravity-live-preview.toggle",
         "key": "ctrl+shift+l",
         "mac": "cmd+shift+l",
+        "when": "editorLangId == markdown"
+      },
+      {
+        "command": "antigravity-live-preview.cycleMode",
+        "key": "ctrl+e",
+        "mac": "cmd+e",
         "when": "editorLangId == markdown"
       }
     ],
     "configuration": [
       {
-        "title": "Obsidian Live Preview",
+        "title": "Antigravity Live Preview",
         "properties": {
-          "obsidian-live-preview.enabled": {
+          "antigravity-live-preview.enabled": {
             "type": "boolean",
             "default": true,
             "description": "Enable live preview on markdown files"
           },
-          "obsidian-live-preview.theme": {
+          "antigravity-live-preview.mode": {
+            "type": "string",
+            "enum": [
+              "source",
+              "live-preview",
+              "reading"
+            ],
+            "default": "live-preview",
+            "enumDescriptions": [
+              "Source Mode: Raw markdown only, no rendering",
+              "Live Preview Mode: Rendered markdown with cursor-aware editing",
+              "Reading Mode: Fully rendered markdown, no raw syntax visible"
+            ],
+            "description": "Editor preview mode"
+          },
+          "antigravity-live-preview.theme": {
             "type": "string",
             "enum": [
               "obsidian-dark",
@@ -64,27 +101,27 @@
             "default": "obsidian-dark",
             "description": "Color theme for the editor"
           },
-          "obsidian-live-preview.debounceMs": {
+          "antigravity-live-preview.debounceMs": {
             "type": "number",
             "default": 150,
             "description": "Debounce time in milliseconds for parsing"
           },
-          "obsidian-live-preview.maxFileSize": {
+          "antigravity-live-preview.maxFileSize": {
             "type": "number",
             "default": 1000000,
             "description": "Maximum file size in bytes for live preview"
           },
-          "obsidian-live-preview.renderImages": {
+          "antigravity-live-preview.renderImages": {
             "type": "boolean",
             "default": true,
             "description": "Render inline images"
           },
-          "obsidian-live-preview.renderMath": {
+          "antigravity-live-preview.renderMath": {
             "type": "boolean",
             "default": true,
             "description": "Render LaTeX math expressions"
           },
-          "obsidian-live-preview.syncScroll": {
+          "antigravity-live-preview.syncScroll": {
             "type": "boolean",
             "default": true,
             "description": "Sync scroll position between editor and content"

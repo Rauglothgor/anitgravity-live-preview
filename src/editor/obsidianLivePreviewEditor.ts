@@ -1,7 +1,7 @@
 /**
- * Obsidian Live Preview Editor for Google Antigravity
+ * Antigravity Live Preview Editor
  *
- * Implements true Obsidian-style inline markdown rendering with:
+ * Implements true inline markdown rendering with:
  * - Syntax hiding (## becomes invisible, heading text shows formatted)
  * - Cursor-aware rendering (raw markdown at cursor, rendered elsewhere)
  * - Instant parsing and decoration updates
@@ -9,10 +9,46 @@
  */
 
 import { EditorView, ViewPlugin, ViewUpdate, Decoration, DecorationSet, WidgetType } from '@codemirror/view';
-import { EditorState } from '@codemirror/state';
+import { EditorState, StateField, StateEffect, Facet } from '@codemirror/state';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
 import MarkdownIt from 'markdown-it';
+
+/**
+ * Preview mode types
+ * - source: Raw markdown only, no rendering
+ * - live-preview: Rendered markdown with cursor-aware editing (default)
+ * - reading: Fully rendered markdown, no raw syntax visible
+ */
+export type PreviewMode = 'source' | 'live-preview' | 'reading';
+
+/**
+ * State effect for changing preview mode
+ */
+const setModeEffect = StateEffect.define<PreviewMode>();
+
+/**
+ * Facet for configuring initial preview mode
+ */
+const initialModeFacet = Facet.define<PreviewMode, PreviewMode>({
+  combine: values => values[0] ?? 'live-preview'
+});
+
+/**
+ * State field to track current preview mode
+ * Uses initialModeFacet for configurable initial value
+ */
+const modeField = StateField.define<PreviewMode>({
+  create: (state) => state.facet(initialModeFacet),
+  update(value, tr) {
+    for (const effect of tr.effects) {
+      if (effect.is(setModeEffect)) {
+        return effect.value;
+      }
+    }
+    return value;
+  },
+});
 
 /**
  * Widget types for various markdown elements
@@ -114,6 +150,38 @@ class TaskListWidget extends WidgetType {
 }
 
 /**
+ * Widget for rendering [[wikilinks]] and [[wikilinks|display text]]
+ */
+class WikilinkWidget extends WidgetType {
+  constructor(readonly target: string, readonly displayText: string) {
+    super();
+  }
+
+  toDOM() {
+    const a = document.createElement('a');
+    a.className = 'cm-wikilink';
+    a.href = '#';
+    a.textContent = this.displayText;
+    a.title = `Open: ${this.target}`;
+    a.dataset.target = this.target;
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      // Dispatch custom event for webview to handle
+      const event = new CustomEvent('wikilink-click', {
+        detail: { target: this.target },
+        bubbles: true,
+      });
+      a.dispatchEvent(event);
+    });
+    return a;
+  }
+
+  eq(other: WikilinkWidget) {
+    return this.target === other.target && this.displayText === other.displayText;
+  }
+}
+
+/**
  * Main Live Preview Plugin
  */
 export class ObsidianLivePreviewPlugin {
@@ -141,12 +209,15 @@ export class ObsidianLivePreviewPlugin {
   update(update: ViewUpdate) {
     const selectionChanged = update.selectionSet;
     const docChanged = update.docChanged;
+    const modeChanged = update.transactions.some(tr =>
+      tr.effects.some(effect => effect.is(setModeEffect))
+    );
 
     if (selectionChanged) {
       this.updateCursorPosition();
     }
 
-    if (docChanged || selectionChanged) {
+    if (docChanged || selectionChanged || modeChanged) {
       this.cachedDecorations = this.computeDecorations();
     }
   }
@@ -161,6 +232,14 @@ export class ObsidianLivePreviewPlugin {
   }
 
   private computeDecorations(): DecorationSet {
+    // Get current mode from state
+    const mode = this.view.state.field(modeField);
+
+    // Source mode: no decorations, show raw markdown
+    if (mode === 'source') {
+      return Decoration.none;
+    }
+
     const decorations: Array<{from: number; to: number; value: Decoration}> = [];
     const text = this.view.state.doc.toString();
     const lines = text.split('\n');
@@ -168,8 +247,9 @@ export class ObsidianLivePreviewPlugin {
     let charPos = 0;
 
     lines.forEach((line, lineIndex) => {
-      // Skip rendering at cursor line - show raw markdown
-      if (lineIndex === this.cursorLine) {
+      // Live preview mode: skip rendering at cursor line - show raw markdown
+      // Reading mode: render all lines (ignore cursor position)
+      if (mode === 'live-preview' && lineIndex === this.cursorLine) {
         charPos += line.length + 1;
         return;
       }
@@ -243,6 +323,10 @@ export class ObsidianLivePreviewPlugin {
     // Image decoration
     const imageDecorations = this.decorateImages(line, lineStartPos);
     decorations.push(...imageDecorations);
+
+    // Wikilink decoration [[Page Name]] or [[Page Name|Display Text]]
+    const wikilinkDecorations = this.decorateWikilinks(line, lineStartPos);
+    decorations.push(...wikilinkDecorations);
 
     return decorations;
   }
@@ -557,6 +641,30 @@ export class ObsidianLivePreviewPlugin {
 
     return decorations;
   }
+
+  private decorateWikilinks(line: string, lineStartPos: number): Array<{from: number; to: number; value: Decoration}> {
+    const decorations: Array<{from: number; to: number; value: Decoration}> = [];
+    // Match [[target]] or [[target|display text]]
+    const wikilinkRegex = /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g;
+    let match;
+
+    while ((match = wikilinkRegex.exec(line)) !== null) {
+      const linkStart = lineStartPos + match.index;
+      const linkEnd = linkStart + match[0].length;
+      const target = match[1];
+      const displayText = match[2] || match[1]; // Use target as display if no pipe
+
+      decorations.push({
+        from: linkStart,
+        to: linkEnd,
+        value: Decoration.replace({
+          widget: new WikilinkWidget(target, displayText),
+        }),
+      });
+    }
+
+    return decorations;
+  }
 }
 
 /**
@@ -567,9 +675,11 @@ export function createObsidianLivePreviewEditor(
   initialDoc: string = '',
   options?: {
     theme?: 'light' | 'dark';
+    mode?: PreviewMode;
   }
 ): EditorView {
   const theme = options?.theme || 'dark';
+  const initialMode = options?.mode || 'live-preview';
 
   // Create the plugin
   const livePreviewPlugin = ViewPlugin.fromClass(ObsidianLivePreviewPlugin, {
@@ -580,6 +690,8 @@ export function createObsidianLivePreviewEditor(
     doc: initialDoc,
     extensions: [
       markdown(),
+      initialModeFacet.of(initialMode),
+      modeField,
       livePreviewPlugin,
       EditorView.lineWrapping,
       EditorView.contentAttributes.of({ spellcheck: 'true' }),
@@ -613,4 +725,25 @@ export function setEditorContent(view: EditorView, content: string) {
       insert: content,
     },
   });
+}
+
+/**
+ * Set editor preview mode
+ */
+export function setEditorMode(view: EditorView, mode: PreviewMode) {
+  view.dispatch({
+    effects: setModeEffect.of(mode),
+  });
+}
+
+/**
+ * Get current editor preview mode
+ */
+export function getEditorMode(view: EditorView): PreviewMode {
+  // Try to get the mode from state, with fallback
+  try {
+    return view.state.field(modeField);
+  } catch {
+    return 'live-preview';
+  }
 }

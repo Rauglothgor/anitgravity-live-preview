@@ -1,6 +1,6 @@
-# Obsidian Live Preview for Google Antigravity
+# Antigravity Live Preview
 
-A **true Obsidian-style inline markdown live preview** extension for Google Antigravity IDE. No split panels, no distractions—just clean, formatted markdown that hides syntax and renders inline as you type.
+A true **Obsidian-style inline markdown live preview** extension for Google Antigravity IDE. No split panels, no distractions—just clean, formatted markdown that hides syntax and renders inline as you type.
 
 ## Features
 
@@ -29,8 +29,8 @@ A **true Obsidian-style inline markdown live preview** extension for Google Anti
 
 ### 🎨 Design & UX
 
-- **Obsidian-inspired theme** — Dark mode optimized for eye comfort
-- **Responsive typography** — Heading sizes match Obsidian's hierarchy
+- **Shimmering Focus theme** — Minimalist dark mode optimized for keyboard-centric workflows
+- **Responsive typography** — Clear heading hierarchy with distinctive styles
 - **Color-coded syntax** — Links, code, blockquotes visually distinct
 - **Smooth interactions** — Hover effects and smooth transitions
 - **Accessibility** — High contrast, keyboard navigation, screen reader support
@@ -50,8 +50,8 @@ A **true Obsidian-style inline markdown live preview** extension for Google Anti
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/obsidian-live-preview-antigravity.git
-   cd obsidian-live-preview-antigravity
+   git clone https://github.com/Rauglothgor/anitgravity-live-preview.git
+   cd antigravity-live-preview
    ```
 
 2. Install dependencies:
@@ -82,14 +82,14 @@ A **true Obsidian-style inline markdown live preview** extension for Google Anti
 
 **Method 1: Command Palette**
 - Open command palette (`Cmd+Shift+P` / `Ctrl+Shift+P`)
-- Search "Toggle Obsidian Live Preview"
+- Search "Toggle Live Preview"
 - Press Enter
 
 **Method 2: Keyboard Shortcut**
 - Press `Cmd+Shift+L` (Mac) or `Ctrl+Shift+L` (Windows/Linux)
 
 **Method 3: Auto-enable**
-- Set `obsidian-live-preview.enabled: true` in settings
+- Set `antigravity-live-preview.enabled: true` in settings
 - Live preview enables automatically for all markdown files
 
 ### Configuration
@@ -98,13 +98,13 @@ Open VS Code/Antigravity settings and customize:
 
 ```json
 {
-  "obsidian-live-preview.enabled": true,
-  "obsidian-live-preview.theme": "obsidian-dark",
-  "obsidian-live-preview.debounceMs": 150,
-  "obsidian-live-preview.maxFileSize": 1000000,
-  "obsidian-live-preview.renderImages": true,
-  "obsidian-live-preview.renderMath": true,
-  "obsidian-live-preview.syncScroll": true
+  "antigravity-live-preview.enabled": true,
+  "antigravity-live-preview.theme": "antigravity-dark",
+  "antigravity-live-preview.debounceMs": 150,
+  "antigravity-live-preview.maxFileSize": 1000000,
+  "antigravity-live-preview.renderImages": true,
+  "antigravity-live-preview.renderMath": true,
+  "antigravity-live-preview.syncScroll": true
 }
 ```
 
@@ -151,7 +151,7 @@ CodeMirror 6 Editor
 ### Project Structure
 
 ```
-obsidian-live-preview-antigravity/
+antigravity-live-preview/
 ├── src/
 │   ├── extension.ts                 # VS Code extension handler
 │   ├── editor/
@@ -159,7 +159,7 @@ obsidian-live-preview-antigravity/
 │   └── webview/
 │       └── editor.ts               # Webview initialization
 ├── media/
-│   └── editor.css                  # Styling (Obsidian theme)
+│   └── editor.css                  # Shimmering Focus styling
 ├── out/                            # Compiled JavaScript
 ├── package.json                    # Dependencies and scripts
 ├── tsconfig.json                   # TypeScript configuration
@@ -182,7 +182,7 @@ npm run typecheck
 ### Key Files Explained
 
 **obsidianLivePreviewEditor.ts**
-- Core CodeMirror 6 setup with Obsidian styling
+- Core CodeMirror 6 setup with live preview styling
 - Widget classes for rendering complex elements
 - Decoration logic for each markdown type
 - Main `ObsidianLivePreviewPlugin` class
@@ -194,7 +194,7 @@ npm run typecheck
 - File change synchronization
 
 **editor.css**
-- Complete styling system matching Obsidian's appearance
+- Shimmering Focus theme with 6 color schemes
 - Dark mode optimized (default for Antigravity)
 - Light mode support
 - Responsive design
@@ -256,8 +256,8 @@ For large files, adjust debounce and parsing strategy:
 
 ```json
 {
-  "obsidian-live-preview.debounceMs": 300,
-  "obsidian-live-preview.maxFileSize": 5000000
+  "antigravity-live-preview.debounceMs": 300,
+  "antigravity-live-preview.maxFileSize": 5000000
 }
 ```
 
@@ -265,7 +265,7 @@ For real-time rendering without debounce (not recommended):
 
 ```json
 {
-  "obsidian-live-preview.debounceMs": 0
+  "antigravity-live-preview.debounceMs": 0
 }
 ```
 
@@ -289,7 +289,7 @@ To customize colors, edit `media/editor.css`:
 
 **Solution:**
 1. Check that file is markdown (`.md` extension)
-2. Verify extension is installed: `Ctrl+Shift+X` → Search "Obsidian"
+2. Verify extension is installed: `Ctrl+Shift+X` → Search "Antigravity Live Preview"
 3. Check Antigravity version (requires 1.95+)
 
 ### Issue: Rendering looks wrong
@@ -302,7 +302,7 @@ To customize colors, edit `media/editor.css`:
 ### Issue: Performance is slow
 
 **Solution:**
-1. Increase debounce: `"obsidian-live-preview.debounceMs": 300`
+1. Increase debounce: `"antigravity-live-preview.debounceMs": 300`
 2. Check file size: Extension has 1MB default limit
 3. Close other extensions: Disable competing markdown extensions
 
@@ -356,9 +356,7 @@ MIT © 2025
 
 ## Support
 
-- 📧 Email: support@example.com
-- 💬 GitHub Issues: [Report a bug](https://github.com/your-username/obsidian-live-preview-antigravity/issues)
-- 🐦 Twitter: [@your-handle](https://twitter.com/your-handle)
+- 💬 GitHub Issues: [Report a bug](https://github.com/Rauglothgor/anitgravity-live-preview/issues)
 
 ---
 

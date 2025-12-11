@@ -258,12 +258,15 @@ async function createLivePreviewEditor(
   const styleUri = panel.webview.asWebviewUri(
     vscode.Uri.file(path.join(context.extensionPath, 'media', 'editor.css'))
   );
+  const katexStyleUri = panel.webview.asWebviewUri(
+    vscode.Uri.file(path.join(context.extensionPath, 'media', 'katex.min.css'))
+  );
 
   // Get initial mode from configuration
   const initialMode = vscode.workspace.getConfiguration('antigravity-live-preview').get<PreviewMode>('mode') || 'live-preview';
 
   // Set initial HTML
-  panel.webview.html = getWebviewContent(scriptUri, styleUri, document.getText(), initialMode);
+  panel.webview.html = getWebviewContent(scriptUri, styleUri, katexStyleUri, document.getText(), initialMode);
 
   const disposables: vscode.Disposable[] = [];
 
@@ -349,6 +352,7 @@ async function createLivePreviewEditor(
 function getWebviewContent(
   scriptUri: vscode.Uri,
   styleUri: vscode.Uri,
+  katexStyleUri: vscode.Uri,
   initialDoc: string,
   initialMode: PreviewMode
 ): string {
@@ -364,6 +368,7 @@ function getWebviewContent(
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Antigravity Live Preview</title>
+    <link rel="stylesheet" href="${katexStyleUri}">
     <link rel="stylesheet" href="${styleUri}">
 </head>
 <body>

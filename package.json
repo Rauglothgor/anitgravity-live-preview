@@ -131,10 +131,11 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run esbuild-base -- --minify",
+    "vscode:prepublish": "npm run copy-assets && npm run esbuild-base -- --minify",
+    "copy-assets": "node scripts/copy-assets.js",
     "esbuild-base": "node esbuild.config.js",
-    "esbuild": "npm run esbuild-base -- --sourcemap",
-    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+    "esbuild": "npm run copy-assets && npm run esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run copy-assets && npm run esbuild-base -- --sourcemap --watch",
     "typecheck": "tsc --noEmit",
     "pretest": "tsc -p tsconfig.test.json",
     "test": "node ./out/test/runTest.js",
@@ -149,10 +150,12 @@
     "@codemirror/state": "^6.4.0",
     "@codemirror/theme-one-dark": "^6.1.2",
     "@codemirror/view": "^6.27.0",
+    "katex": "^0.16.27",
     "markdown-it": "^14.0.0"
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
+    "@types/katex": "^0.16.7",
     "@types/markdown-it": "^14.1.2",
     "@types/mocha": "^10.0.10",
     "@types/node": "^20.10.0",

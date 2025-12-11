@@ -846,3 +846,232 @@ hr,
   padding-top: 45vh;
   padding-bottom: 45vh;
 }
+
+/* ==========================================================================
+   Math Rendering (KaTeX)
+   ========================================================================== */
+
+.cm-math {
+  font-family: "KaTeX_Math", "Times New Roman", serif;
+}
+
+.cm-math-inline {
+  display: inline-block;
+  vertical-align: middle;
+  padding: 0 0.15em;
+  color: var(--sf-accent-secondary);
+}
+
+.cm-math-block {
+  display: block;
+  text-align: center;
+  margin: var(--sf-space-4) 0;
+  padding: var(--sf-space-3);
+  background: color-mix(in srgb, var(--sf-bg-elevated) 50%, transparent);
+  border-radius: var(--sf-radius-md);
+  overflow-x: auto;
+}
+
+.cm-math-error {
+  color: var(--sf-error);
+  font-family: var(--sf-font-mono);
+  font-size: 0.9em;
+  background: color-mix(in srgb, var(--sf-error) 10%, transparent);
+  padding: 0.2em 0.4em;
+  border-radius: var(--sf-radius-sm);
+}
+
+/* KaTeX color overrides to match theme */
+.katex {
+  color: var(--sf-text-primary);
+}
+
+.katex .mord,
+.katex .mop,
+.katex .mbin,
+.katex .mrel,
+.katex .mopen,
+.katex .mclose,
+.katex .mpunct,
+.katex .minner {
+  color: inherit;
+}
+
+/* Math operators and special symbols */
+.katex .mop {
+  color: var(--sf-accent-primary);
+}
+
+.katex .mbin {
+  color: var(--sf-accent-tertiary);
+}
+
+/* Fraction lines */
+.katex .frac-line {
+  border-color: var(--sf-text-muted);
+}
+
+/* Sqrt symbol */
+.katex .sqrt > .sqrt-sign {
+  color: var(--sf-accent-secondary);
+}
+
+/* ==========================================================================
+   Callouts / Admonitions (Obsidian-style)
+   ========================================================================== */
+
+.cm-callout {
+  display: block;
+  margin: var(--sf-space-4) 0;
+  padding: var(--sf-space-3) var(--sf-space-4);
+  border-radius: var(--sf-radius-md);
+  border-left: 4px solid;
+  background: var(--sf-bg-surface);
+}
+
+.cm-callout-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sf-space-2);
+  font-weight: 600;
+  font-size: 0.95em;
+}
+
+.cm-callout-icon {
+  font-size: 1.1em;
+  flex-shrink: 0;
+}
+
+.cm-callout-title {
+  flex: 1;
+}
+
+.cm-callout-fold {
+  font-size: 0.75em;
+  color: var(--sf-text-muted);
+  transition: transform var(--sf-transition-fast);
+}
+
+.cm-callout-folded .cm-callout-fold {
+  transform: rotate(0deg);
+}
+
+.cm-callout:not(.cm-callout-folded) .cm-callout-fold {
+  transform: rotate(90deg);
+}
+
+.cm-callout-content {
+  margin-top: var(--sf-space-2);
+  padding-top: var(--sf-space-2);
+  border-top: 1px solid var(--sf-border-muted);
+  color: var(--sf-text-muted);
+  font-size: 0.95em;
+}
+
+/* Callout type colors */
+.cm-callout-note {
+  border-left-color: var(--sf-accent-secondary);
+  background: color-mix(in srgb, var(--sf-accent-secondary) 8%, var(--sf-bg-surface));
+}
+.cm-callout-note .cm-callout-header {
+  color: var(--sf-accent-secondary);
+}
+
+.cm-callout-abstract {
+  border-left-color: #00bcd4;
+  background: color-mix(in srgb, #00bcd4 8%, var(--sf-bg-surface));
+}
+.cm-callout-abstract .cm-callout-header {
+  color: #00bcd4;
+}
+
+.cm-callout-info {
+  border-left-color: #2196f3;
+  background: color-mix(in srgb, #2196f3 8%, var(--sf-bg-surface));
+}
+.cm-callout-info .cm-callout-header {
+  color: #2196f3;
+}
+
+.cm-callout-todo {
+  border-left-color: #2196f3;
+  background: color-mix(in srgb, #2196f3 8%, var(--sf-bg-surface));
+}
+.cm-callout-todo .cm-callout-header {
+  color: #2196f3;
+}
+
+.cm-callout-tip {
+  border-left-color: #00bfa5;
+  background: color-mix(in srgb, #00bfa5 8%, var(--sf-bg-surface));
+}
+.cm-callout-tip .cm-callout-header {
+  color: #00bfa5;
+}
+
+.cm-callout-success {
+  border-left-color: var(--sf-accent-success);
+  background: color-mix(in srgb, var(--sf-accent-success) 8%, var(--sf-bg-surface));
+}
+.cm-callout-success .cm-callout-header {
+  color: var(--sf-accent-success);
+}
+
+.cm-callout-question {
+  border-left-color: #ff9800;
+  background: color-mix(in srgb, #ff9800 8%, var(--sf-bg-surface));
+}
+.cm-callout-question .cm-callout-header {
+  color: #ff9800;
+}
+
+.cm-callout-warning {
+  border-left-color: var(--sf-accent-warning);
+  background: color-mix(in srgb, var(--sf-accent-warning) 8%, var(--sf-bg-surface));
+}
+.cm-callout-warning .cm-callout-header {
+  color: var(--sf-accent-warning);
+}
+
+.cm-callout-failure {
+  border-left-color: #f44336;
+  background: color-mix(in srgb, #f44336 8%, var(--sf-bg-surface));
+}
+.cm-callout-failure .cm-callout-header {
+  color: #f44336;
+}
+
+.cm-callout-danger {
+  border-left-color: var(--sf-accent-error);
+  background: color-mix(in srgb, var(--sf-accent-error) 8%, var(--sf-bg-surface));
+}
+.cm-callout-danger .cm-callout-header {
+  color: var(--sf-accent-error);
+}
+
+.cm-callout-bug {
+  border-left-color: #e91e63;
+  background: color-mix(in srgb, #e91e63 8%, var(--sf-bg-surface));
+}
+.cm-callout-bug .cm-callout-header {
+  color: #e91e63;
+}
+
+.cm-callout-example {
+  border-left-color: var(--sf-accent-primary);
+  background: color-mix(in srgb, var(--sf-accent-primary) 8%, var(--sf-bg-surface));
+}
+.cm-callout-example .cm-callout-header {
+  color: var(--sf-accent-primary);
+}
+
+.cm-callout-quote {
+  border-left-color: var(--sf-text-subtle);
+  background: color-mix(in srgb, var(--sf-text-subtle) 8%, var(--sf-bg-surface));
+}
+.cm-callout-quote .cm-callout-header {
+  color: var(--sf-text-muted);
+}
+.cm-callout-quote .cm-callout-content {
+  font-style: italic;
+}

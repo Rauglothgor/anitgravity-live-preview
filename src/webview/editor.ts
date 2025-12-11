@@ -23,6 +23,9 @@ let editorView: EditorView | null = null;
 let updateTimeout: ReturnType<typeof setTimeout> | null = null;
 const UPDATE_DEBOUNCE = 150;
 
+// Track content we've sent to VS Code to ignore echoes
+let lastSentContent: string | null = null;
+
 // Get VS Code API
 const vscode = window.acquireVsCodeApi();
 
@@ -50,6 +53,8 @@ window.initializeEditor = function (initialContent: string, initialMode: Preview
       updateTimeout = setTimeout(() => {
         if (editorView) {
           const content = getEditorContent(editorView);
+          // Track what we're sending to ignore echoes
+          lastSentContent = content;
           // Send changes to VS Code
           vscode.postMessage({
             command: 'updateFromEditor',
@@ -90,6 +95,13 @@ window.addEventListener('message', (event) => {
   switch (message.command) {
     case 'updateContent':
       if (editorView) {
+        // Ignore echoes of content we just sent
+        if (lastSentContent === message.content) {
+          lastSentContent = null;
+          break;
+        }
+        lastSentContent = null;
+
         const currentContent = getEditorContent(editorView);
         // Only update if content actually changed
         if (currentContent !== message.content) {

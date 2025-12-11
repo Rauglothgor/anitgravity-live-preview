@@ -8,11 +8,13 @@
  * - Full markdown support (headings, lists, bold, italic, code, links, etc)
  */
 
-import { EditorView, ViewPlugin, ViewUpdate, Decoration, DecorationSet, WidgetType } from '@codemirror/view';
+import { EditorView, ViewPlugin, ViewUpdate, Decoration, DecorationSet, WidgetType, keymap } from '@codemirror/view';
 import { EditorState, StateField, StateEffect, Facet } from '@codemirror/state';
 import { markdown } from '@codemirror/lang-markdown';
 import { oneDark } from '@codemirror/theme-one-dark';
+import { history, defaultKeymap, historyKeymap } from '@codemirror/commands';
 import MarkdownIt from 'markdown-it';
+import katex from 'katex';
 
 /**
  * Preview mode types
@@ -182,6 +184,163 @@ class WikilinkWidget extends WidgetType {
 }
 
 /**
+ * Widget for rendering inline math $...$
+ */
+class InlineMathWidget extends WidgetType {
+  constructor(readonly latex: string) {
+    super();
+  }
+
+  toDOM() {
+    const span = document.createElement('span');
+    span.className = 'cm-math cm-math-inline';
+    try {
+      katex.render(this.latex, span, {
+        throwOnError: false,
+        displayMode: false,
+      });
+    } catch (e) {
+      span.textContent = `$${this.latex}$`;
+      span.className += ' cm-math-error';
+    }
+    return span;
+  }
+
+  eq(other: InlineMathWidget) {
+    return this.latex === other.latex;
+  }
+}
+
+/**
+ * Widget for rendering block math $$...$$
+ */
+class BlockMathWidget extends WidgetType {
+  constructor(readonly latex: string) {
+    super();
+  }
+
+  toDOM() {
+    const div = document.createElement('div');
+    div.className = 'cm-math cm-math-block';
+    try {
+      katex.render(this.latex, div, {
+        throwOnError: false,
+        displayMode: true,
+      });
+    } catch (e) {
+      div.textContent = `$$${this.latex}$$`;
+      div.className += ' cm-math-error';
+    }
+    return div;
+  }
+
+  eq(other: BlockMathWidget) {
+    return this.latex === other.latex;
+  }
+}
+
+/**
+ * Callout types with their icons and default colors
+ */
+const CALLOUT_TYPES: Record<string, { icon: string; colorClass: string }> = {
+  note: { icon: '📝', colorClass: 'cm-callout-note' },
+  abstract: { icon: '📋', colorClass: 'cm-callout-abstract' },
+  summary: { icon: '📋', colorClass: 'cm-callout-abstract' },
+  tldr: { icon: '📋', colorClass: 'cm-callout-abstract' },
+  info: { icon: 'ℹ️', colorClass: 'cm-callout-info' },
+  todo: { icon: '☑️', colorClass: 'cm-callout-todo' },
+  tip: { icon: '💡', colorClass: 'cm-callout-tip' },
+  hint: { icon: '💡', colorClass: 'cm-callout-tip' },
+  important: { icon: '🔥', colorClass: 'cm-callout-tip' },
+  success: { icon: '✅', colorClass: 'cm-callout-success' },
+  check: { icon: '✅', colorClass: 'cm-callout-success' },
+  done: { icon: '✅', colorClass: 'cm-callout-success' },
+  question: { icon: '❓', colorClass: 'cm-callout-question' },
+  help: { icon: '❓', colorClass: 'cm-callout-question' },
+  faq: { icon: '❓', colorClass: 'cm-callout-question' },
+  warning: { icon: '⚠️', colorClass: 'cm-callout-warning' },
+  caution: { icon: '⚠️', colorClass: 'cm-callout-warning' },
+  attention: { icon: '⚠️', colorClass: 'cm-callout-warning' },
+  failure: { icon: '❌', colorClass: 'cm-callout-failure' },
+  fail: { icon: '❌', colorClass: 'cm-callout-failure' },
+  missing: { icon: '❌', colorClass: 'cm-callout-failure' },
+  danger: { icon: '⛔', colorClass: 'cm-callout-danger' },
+  error: { icon: '⛔', colorClass: 'cm-callout-danger' },
+  bug: { icon: '🐛', colorClass: 'cm-callout-bug' },
+  example: { icon: '📖', colorClass: 'cm-callout-example' },
+  quote: { icon: '💬', colorClass: 'cm-callout-quote' },
+  cite: { icon: '💬', colorClass: 'cm-callout-quote' },
+};
+
+/**
+ * Widget for rendering Obsidian-style callouts
+ * Syntax: > [!TYPE] Optional Title
+ */
+class CalloutWidget extends WidgetType {
+  constructor(
+    readonly calloutType: string,
+    readonly title: string,
+    readonly content: string,
+    readonly isFolded: boolean
+  ) {
+    super();
+  }
+
+  toDOM() {
+    const typeInfo = CALLOUT_TYPES[this.calloutType.toLowerCase()] ||
+      { icon: '📌', colorClass: 'cm-callout-note' };
+
+    const container = document.createElement('div');
+    container.className = `cm-callout ${typeInfo.colorClass}`;
+    if (this.isFolded) {
+      container.classList.add('cm-callout-folded');
+    }
+
+    // Header with icon and title
+    const header = document.createElement('div');
+    header.className = 'cm-callout-header';
+
+    const icon = document.createElement('span');
+    icon.className = 'cm-callout-icon';
+    icon.textContent = typeInfo.icon;
+
+    const title = document.createElement('span');
+    title.className = 'cm-callout-title';
+    title.textContent = this.title || this.calloutType.charAt(0).toUpperCase() + this.calloutType.slice(1);
+
+    header.appendChild(icon);
+    header.appendChild(title);
+
+    // Fold indicator if foldable
+    if (this.isFolded) {
+      const foldIcon = document.createElement('span');
+      foldIcon.className = 'cm-callout-fold';
+      foldIcon.textContent = '▶';
+      header.appendChild(foldIcon);
+    }
+
+    container.appendChild(header);
+
+    // Content (only if not folded or has content)
+    if (this.content && !this.isFolded) {
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'cm-callout-content';
+      contentDiv.textContent = this.content;
+      container.appendChild(contentDiv);
+    }
+
+    return container;
+  }
+
+  eq(other: CalloutWidget) {
+    return this.calloutType === other.calloutType &&
+           this.title === other.title &&
+           this.content === other.content &&
+           this.isFolded === other.isFolded;
+  }
+}
+
+/**
  * Main Live Preview Plugin
  */
 export class ObsidianLivePreviewPlugin {
@@ -193,8 +352,13 @@ export class ObsidianLivePreviewPlugin {
   constructor(view: EditorView) {
     this.view = view;
     this.initializeParser();
-    this.updateCursorPosition();
-    this.cachedDecorations = this.computeDecorations();
+    try {
+      this.updateCursorPosition();
+      this.cachedDecorations = this.computeDecorations();
+    } catch (error) {
+      console.error('Plugin initialization error:', error);
+      this.cachedDecorations = Decoration.none;
+    }
   }
 
   private initializeParser() {
@@ -207,18 +371,23 @@ export class ObsidianLivePreviewPlugin {
   }
 
   update(update: ViewUpdate) {
-    const selectionChanged = update.selectionSet;
-    const docChanged = update.docChanged;
-    const modeChanged = update.transactions.some(tr =>
-      tr.effects.some(effect => effect.is(setModeEffect))
-    );
+    try {
+      const selectionChanged = update.selectionSet;
+      const docChanged = update.docChanged;
+      const modeChanged = update.transactions.some(tr =>
+        tr.effects.some(effect => effect.is(setModeEffect))
+      );
 
-    if (selectionChanged) {
-      this.updateCursorPosition();
-    }
+      if (selectionChanged) {
+        this.updateCursorPosition();
+      }
 
-    if (docChanged || selectionChanged || modeChanged) {
-      this.cachedDecorations = this.computeDecorations();
+      if (docChanged || selectionChanged || modeChanged) {
+        this.cachedDecorations = this.computeDecorations();
+      }
+    } catch (error) {
+      console.error('Plugin update error:', error);
+      // Don't crash - keep existing decorations
     }
   }
 
@@ -227,43 +396,66 @@ export class ObsidianLivePreviewPlugin {
   }
 
   private updateCursorPosition() {
-    const cursorPos = this.view.state.selection.main.head;
-    this.cursorLine = this.view.state.doc.lineAt(cursorPos).number - 1;
+    try {
+      const cursorPos = this.view.state.selection.main.head;
+      this.cursorLine = this.view.state.doc.lineAt(cursorPos).number - 1;
+    } catch (error) {
+      console.error('Cursor position update error:', error);
+      this.cursorLine = -1;
+    }
   }
 
   private computeDecorations(): DecorationSet {
-    // Get current mode from state
-    const mode = this.view.state.field(modeField);
+    try {
+      // Get current mode from state
+      const mode = this.view.state.field(modeField);
 
-    // Source mode: no decorations, show raw markdown
-    if (mode === 'source') {
-      return Decoration.none;
-    }
-
-    const decorations: Array<{from: number; to: number; value: Decoration}> = [];
-    const text = this.view.state.doc.toString();
-    const lines = text.split('\n');
-
-    let charPos = 0;
-
-    lines.forEach((line, lineIndex) => {
-      // Live preview mode: skip rendering at cursor line - show raw markdown
-      // Reading mode: render all lines (ignore cursor position)
-      if (mode === 'live-preview' && lineIndex === this.cursorLine) {
-        charPos += line.length + 1;
-        return;
+      // Source mode: no decorations, show raw markdown
+      if (mode === 'source') {
+        return Decoration.none;
       }
 
-      const lineDecorations = this.decorateLine(line, charPos, lineIndex);
-      decorations.push(...lineDecorations);
+      const decorations: Array<{from: number; to: number; value: Decoration}> = [];
+      const text = this.view.state.doc.toString();
+      const lines = text.split('\n');
 
-      charPos += line.length + 1; // +1 for newline
-    });
+      let charPos = 0;
+      const docLength = this.view.state.doc.length;
 
-    // Sort decorations by position
-    decorations.sort((a, b) => a.from - b.from);
+      lines.forEach((line, lineIndex) => {
+        // Live preview mode: skip rendering at cursor line - show raw markdown
+        // Reading mode: render all lines (ignore cursor position)
+        if (mode === 'live-preview' && lineIndex === this.cursorLine) {
+          charPos += line.length + 1;
+          return;
+        }
 
-    return Decoration.set(decorations.map(d => d.value.range(d.from, d.to)));
+        try {
+          const lineDecorations = this.decorateLine(line, charPos, lineIndex);
+          // Filter out any decorations that exceed document bounds
+          for (const deco of lineDecorations) {
+            if (deco.from >= 0 && deco.to <= docLength && deco.from < deco.to) {
+              decorations.push(deco);
+            }
+          }
+        } catch (lineError) {
+          // Skip this line if decoration fails, don't crash the whole plugin
+          console.warn('Decoration error on line', lineIndex, lineError);
+        }
+
+        charPos += line.length + 1; // +1 for newline
+      });
+
+      // Sort decorations by position
+      decorations.sort((a, b) => a.from - b.from);
+
+      return Decoration.set(decorations.map(d => d.value.range(d.from, d.to)));
+    } catch (error) {
+      // If decoration computation fails entirely, return empty decorations
+      // This prevents the plugin from crashing
+      console.error('Decoration computation failed:', error);
+      return Decoration.none;
+    }
   }
 
   private decorateLine(line: string, lineStartPos: number, _lineIndex: number): Array<{from: number; to: number; value: Decoration}> {
@@ -280,7 +472,14 @@ export class ObsidianLivePreviewPlugin {
       return this.decorateHeading(headingMatch, lineStartPos, line);
     }
 
-    // Blockquote detection
+    // Callout detection (must come before blockquote)
+    // Syntax: > [!TYPE] Optional Title or > [!TYPE]- Folded Title
+    const calloutMatch = line.match(/^>\s*\[!(\w+)\](-?)\s*(.*)?$/);
+    if (calloutMatch) {
+      return this.decorateCallout(calloutMatch, lineStartPos, line);
+    }
+
+    // Blockquote detection (regular blockquotes without callout syntax)
     if (line.match(/^>\s*/)) {
       return this.decorateBlockquote(line, lineStartPos);
     }
@@ -328,6 +527,10 @@ export class ObsidianLivePreviewPlugin {
     const wikilinkDecorations = this.decorateWikilinks(line, lineStartPos);
     decorations.push(...wikilinkDecorations);
 
+    // Math decoration $...$ and $$...$$
+    const mathDecorations = this.decorateMath(line, lineStartPos);
+    decorations.push(...mathDecorations);
+
     return decorations;
   }
 
@@ -366,6 +569,24 @@ export class ObsidianLivePreviewPlugin {
       6: 'font-size: 1em; font-weight: 700; margin: 0.1em 0;',
     };
     return sizes[level] || '';
+  }
+
+  private decorateCallout(match: RegExpMatchArray, lineStartPos: number, line: string): Array<{from: number; to: number; value: Decoration}> {
+    const calloutType = match[1].toLowerCase();
+    const isFolded = match[2] === '-';
+    const title = match[3] || '';
+
+    // For now, we only handle the first line of a callout
+    // Multi-line callout content would require tracking state across lines
+    return [
+      {
+        from: lineStartPos,
+        to: lineStartPos + line.length,
+        value: Decoration.replace({
+          widget: new CalloutWidget(calloutType, title, '', isFolded),
+        }),
+      },
+    ];
   }
 
   private decorateBlockquote(line: string, lineStartPos: number): Array<{from: number; to: number; value: Decoration}> {
@@ -665,6 +886,54 @@ export class ObsidianLivePreviewPlugin {
 
     return decorations;
   }
+
+  private decorateMath(line: string, lineStartPos: number): Array<{from: number; to: number; value: Decoration}> {
+    const decorations: Array<{from: number; to: number; value: Decoration}> = [];
+
+    // Block math $$...$$ (must be checked first to avoid matching as inline)
+    const blockMathRegex = /\$\$([^$]+)\$\$/g;
+    let match;
+
+    while ((match = blockMathRegex.exec(line)) !== null) {
+      const mathStart = lineStartPos + match.index;
+      const mathEnd = mathStart + match[0].length;
+      const latex = match[1].trim();
+
+      decorations.push({
+        from: mathStart,
+        to: mathEnd,
+        value: Decoration.replace({
+          widget: new BlockMathWidget(latex),
+        }),
+      });
+    }
+
+    // Inline math $...$ (avoid matching $$)
+    // Use negative lookbehind/lookahead to avoid $$ matches
+    const inlineMathRegex = /(?<!\$)\$(?!\$)([^$]+)\$(?!\$)/g;
+
+    while ((match = inlineMathRegex.exec(line)) !== null) {
+      const mathStart = lineStartPos + match.index;
+      const mathEnd = mathStart + match[0].length;
+      const latex = match[1].trim();
+
+      // Skip if this position was already decorated by block math
+      const alreadyDecorated = decorations.some(
+        d => mathStart >= d.from && mathStart < d.to
+      );
+      if (alreadyDecorated) continue;
+
+      decorations.push({
+        from: mathStart,
+        to: mathEnd,
+        value: Decoration.replace({
+          widget: new InlineMathWidget(latex),
+        }),
+      });
+    }
+
+    return decorations;
+  }
 }
 
 /**
@@ -690,6 +959,8 @@ export function createObsidianLivePreviewEditor(
     doc: initialDoc,
     extensions: [
       markdown(),
+      history(),
+      keymap.of([...defaultKeymap, ...historyKeymap]),
       initialModeFacet.of(initialMode),
       modeField,
       livePreviewPlugin,
@@ -715,15 +986,24 @@ export function getEditorContent(view: EditorView): string {
 }
 
 /**
- * Set editor content
+ * Set editor content while preserving cursor position
  */
 export function setEditorContent(view: EditorView, content: string) {
+  // Save current selection/cursor position
+  const selection = view.state.selection;
+  const cursorPos = selection.main.head;
+
+  // Calculate new cursor position (clamp to new document length)
+  const newCursorPos = Math.min(cursorPos, content.length);
+
   view.dispatch({
     changes: {
       from: 0,
       to: view.state.doc.length,
       insert: content,
     },
+    // Preserve cursor position after content replacement
+    selection: { anchor: newCursorPos },
   });
 }
 

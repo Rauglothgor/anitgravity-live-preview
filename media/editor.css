@@ -1,0 +1,813 @@
+/**
+ * Shimmering Focus Theme for Antigravity Live Preview
+ *
+ * A minimalist, keyboard-centric theme inspired by the award-winning
+ * Shimmering Focus Obsidian theme (https://github.com/chrisgrieser/shimmering-focus)
+ *
+ * Design Philosophy:
+ * - Radical minimalism: Hide unnecessary UI, not colors
+ * - Keyboard-centric: Optimized for keyboard navigation
+ * - High customizability: Multiple color schemes via data attributes
+ * - Reduced padding/whitespace: Efficient use of screen space
+ */
+
+/* ==========================================================================
+   Color Schemes - CSS Custom Properties
+   ========================================================================== */
+
+:root {
+  /* Default: Rosé Pine inspired (Shimmering Focus default) */
+  --sf-bg-base: #191724;
+  --sf-bg-surface: #1f1d2e;
+  --sf-bg-overlay: #26233a;
+  --sf-bg-muted: #2a273f;
+  --sf-bg-subtle: #393552;
+
+  --sf-text-base: #e0def4;
+  --sf-text-muted: #908caa;
+  --sf-text-subtle: #6e6a86;
+  --sf-text-faint: #524f67;
+
+  --sf-accent-primary: #c4a7e7;    /* Purple - headings */
+  --sf-accent-secondary: #9ccfd8;  /* Cyan - links */
+  --sf-accent-tertiary: #f6c177;   /* Gold - highlights */
+  --sf-accent-success: #9ccfd8;    /* Foam - success */
+  --sf-accent-warning: #f6c177;    /* Gold - warning */
+  --sf-accent-error: #eb6f92;      /* Love - error */
+
+  --sf-code-bg: #232136;
+  --sf-code-text: #e0def4;
+  --sf-code-comment: #6e6a86;
+  --sf-code-keyword: #c4a7e7;
+  --sf-code-string: #f6c177;
+  --sf-code-function: #9ccfd8;
+
+  --sf-border-base: #393552;
+  --sf-border-muted: #2a273f;
+
+  /* Typography */
+  --sf-font-text: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+  --sf-font-mono: "JetBrains Mono", "Fira Code", "SF Mono", Monaco, Consolas, monospace;
+  --sf-font-size: 15px;
+  --sf-line-height: 1.65;
+  --sf-line-height-tight: 1.3;
+
+  /* Spacing - Minimal */
+  --sf-space-1: 0.125rem;
+  --sf-space-2: 0.25rem;
+  --sf-space-3: 0.5rem;
+  --sf-space-4: 0.75rem;
+  --sf-space-5: 1rem;
+  --sf-space-6: 1.5rem;
+  --sf-space-7: 2rem;
+  --sf-space-8: 3rem;
+
+  /* Radius */
+  --sf-radius-sm: 2px;
+  --sf-radius-md: 4px;
+  --sf-radius-lg: 6px;
+
+  /* Transitions */
+  --sf-transition-fast: 100ms ease;
+  --sf-transition-base: 150ms ease;
+  --sf-transition-slow: 250ms ease;
+}
+
+/* Everforest Dark */
+[data-theme="everforest"] {
+  --sf-bg-base: #2d353b;
+  --sf-bg-surface: #343f44;
+  --sf-bg-overlay: #3d484d;
+  --sf-bg-muted: #475258;
+  --sf-bg-subtle: #56635f;
+
+  --sf-text-base: #d3c6aa;
+  --sf-text-muted: #9da9a0;
+  --sf-text-subtle: #7a8478;
+  --sf-text-faint: #5c6a72;
+
+  --sf-accent-primary: #a7c080;    /* Green - headings */
+  --sf-accent-secondary: #7fbbb3;  /* Aqua - links */
+  --sf-accent-tertiary: #dbbc7f;   /* Yellow - highlights */
+  --sf-accent-success: #a7c080;
+  --sf-accent-warning: #dbbc7f;
+  --sf-accent-error: #e67e80;
+
+  --sf-code-bg: #323c41;
+  --sf-code-text: #d3c6aa;
+  --sf-code-keyword: #e67e80;
+  --sf-code-string: #a7c080;
+  --sf-code-function: #7fbbb3;
+
+  --sf-border-base: #475258;
+  --sf-border-muted: #3d484d;
+}
+
+/* Gruvbox Dark */
+[data-theme="gruvbox-dark"] {
+  --sf-bg-base: #282828;
+  --sf-bg-surface: #32302f;
+  --sf-bg-overlay: #3c3836;
+  --sf-bg-muted: #504945;
+  --sf-bg-subtle: #665c54;
+
+  --sf-text-base: #ebdbb2;
+  --sf-text-muted: #bdae93;
+  --sf-text-subtle: #a89984;
+  --sf-text-faint: #7c6f64;
+
+  --sf-accent-primary: #fabd2f;    /* Yellow - headings */
+  --sf-accent-secondary: #83a598;  /* Aqua - links */
+  --sf-accent-tertiary: #fe8019;   /* Orange - highlights */
+  --sf-accent-success: #b8bb26;
+  --sf-accent-warning: #fabd2f;
+  --sf-accent-error: #fb4934;
+
+  --sf-code-bg: #3c3836;
+  --sf-code-text: #ebdbb2;
+  --sf-code-keyword: #fb4934;
+  --sf-code-string: #b8bb26;
+  --sf-code-function: #83a598;
+
+  --sf-border-base: #504945;
+  --sf-border-muted: #3c3836;
+}
+
+/* Coffee */
+[data-theme="coffee"] {
+  --sf-bg-base: #1c1917;
+  --sf-bg-surface: #231f1d;
+  --sf-bg-overlay: #2c2623;
+  --sf-bg-muted: #3d3530;
+  --sf-bg-subtle: #4d443d;
+
+  --sf-text-base: #f5e6d3;
+  --sf-text-muted: #c4a389;
+  --sf-text-subtle: #9a7b5c;
+  --sf-text-faint: #6b5546;
+
+  --sf-accent-primary: #d4a574;    /* Latte - headings */
+  --sf-accent-secondary: #8fb8b0;  /* Sage - links */
+  --sf-accent-tertiary: #e8c4a0;   /* Cream - highlights */
+  --sf-accent-success: #8fb8b0;
+  --sf-accent-warning: #e8c4a0;
+  --sf-accent-error: #d98c8c;
+
+  --sf-code-bg: #2c2623;
+  --sf-code-text: #f5e6d3;
+  --sf-code-keyword: #d98c8c;
+  --sf-code-string: #d4a574;
+  --sf-code-function: #8fb8b0;
+
+  --sf-border-base: #3d3530;
+  --sf-border-muted: #2c2623;
+}
+
+/* Gamma (High Contrast) */
+[data-theme="gamma"] {
+  --sf-bg-base: #0d0d0d;
+  --sf-bg-surface: #141414;
+  --sf-bg-overlay: #1a1a1a;
+  --sf-bg-muted: #262626;
+  --sf-bg-subtle: #333333;
+
+  --sf-text-base: #ffffff;
+  --sf-text-muted: #b3b3b3;
+  --sf-text-subtle: #808080;
+  --sf-text-faint: #4d4d4d;
+
+  --sf-accent-primary: #00ff88;    /* Neon green - headings */
+  --sf-accent-secondary: #00ccff;  /* Cyan - links */
+  --sf-accent-tertiary: #ffcc00;   /* Yellow - highlights */
+  --sf-accent-success: #00ff88;
+  --sf-accent-warning: #ffcc00;
+  --sf-accent-error: #ff3366;
+
+  --sf-code-bg: #1a1a1a;
+  --sf-code-text: #ffffff;
+  --sf-code-keyword: #ff3366;
+  --sf-code-string: #00ff88;
+  --sf-code-function: #00ccff;
+
+  --sf-border-base: #333333;
+  --sf-border-muted: #262626;
+}
+
+/* Light mode */
+[data-theme="light"] {
+  --sf-bg-base: #faf4ed;
+  --sf-bg-surface: #fffaf3;
+  --sf-bg-overlay: #f2e9e1;
+  --sf-bg-muted: #e4d8cf;
+  --sf-bg-subtle: #d7ccc3;
+
+  --sf-text-base: #575279;
+  --sf-text-muted: #797593;
+  --sf-text-subtle: #9893a5;
+  --sf-text-faint: #b4b0be;
+
+  --sf-accent-primary: #907aa9;
+  --sf-accent-secondary: #56949f;
+  --sf-accent-tertiary: #ea9d34;
+  --sf-accent-success: #286983;
+  --sf-accent-warning: #ea9d34;
+  --sf-accent-error: #b4637a;
+
+  --sf-code-bg: #f2e9e1;
+  --sf-code-text: #575279;
+  --sf-code-keyword: #b4637a;
+  --sf-code-string: #286983;
+  --sf-code-function: #56949f;
+
+  --sf-border-base: #d7ccc3;
+  --sf-border-muted: #e4d8cf;
+}
+
+/* ==========================================================================
+   Base Styles - Minimal Reset
+   ========================================================================== */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: var(--sf-font-text);
+  font-size: var(--sf-font-size);
+  line-height: var(--sf-line-height);
+  color: var(--sf-text-base);
+  background: var(--sf-bg-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ==========================================================================
+   Editor Container - Minimal Chrome
+   ========================================================================== */
+
+.editor-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--sf-bg-base);
+}
+
+/* ==========================================================================
+   CodeMirror Editor - Core Styling
+   ========================================================================== */
+
+.cm-editor {
+  width: 100%;
+  height: 100%;
+  font-family: var(--sf-font-text);
+  font-size: var(--sf-font-size);
+  line-height: var(--sf-line-height);
+  background: var(--sf-bg-base);
+}
+
+.cm-scroller {
+  overflow: auto;
+  font-family: inherit;
+}
+
+.cm-content {
+  padding: var(--sf-space-6) var(--sf-space-7);
+  max-width: 760px;
+  margin: 0 auto;
+  caret-color: var(--sf-accent-secondary);
+}
+
+/* Smart UI Hiding - Gutters */
+.cm-gutters {
+  background: transparent;
+  border-right: none;
+  opacity: 0;
+  transition: opacity var(--sf-transition-base);
+}
+
+.cm-editor:hover .cm-gutters,
+.cm-editor:focus-within .cm-gutters {
+  opacity: 1;
+}
+
+.cm-lineNumbers {
+  color: var(--sf-text-faint);
+  font-size: 0.8em;
+  font-family: var(--sf-font-mono);
+  min-width: 2.5em;
+  padding-right: var(--sf-space-3);
+}
+
+.cm-lineNumbers .cm-gutterElement {
+  padding-left: var(--sf-space-2);
+}
+
+/* Active Line - Subtle */
+.cm-activeLine {
+  background: var(--sf-bg-surface);
+}
+
+.cm-activeLineGutter {
+  background: transparent;
+}
+
+/* Cursor */
+.cm-cursor {
+  border-left: 2px solid var(--sf-accent-secondary) !important;
+}
+
+/* Selection */
+.cm-selectionBackground {
+  background: color-mix(in srgb, var(--sf-accent-secondary) 25%, transparent) !important;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--sf-accent-secondary) 30%, transparent);
+  color: inherit;
+}
+
+/* Focus States - Minimal */
+.cm-editor:focus-visible {
+  outline: none;
+}
+
+/* ==========================================================================
+   Hidden Markup - True Syntax Hiding
+   ========================================================================== */
+
+.cm-hidden-markup {
+  display: none !important;
+  font-size: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* ==========================================================================
+   Headings - Distinctive Shimmering Focus Style
+   ========================================================================== */
+
+.cm-heading {
+  font-family: var(--sf-font-text);
+  font-weight: 600;
+  line-height: var(--sf-line-height-tight);
+  color: var(--sf-accent-primary);
+  letter-spacing: -0.02em;
+  display: block;
+}
+
+.cm-heading-1 {
+  font-size: 1.75em;
+  font-weight: 700;
+  margin-top: var(--sf-space-7);
+  margin-bottom: var(--sf-space-4);
+  padding-bottom: var(--sf-space-2);
+  border-bottom: 1px solid var(--sf-border-muted);
+}
+
+.cm-heading-2 {
+  font-size: 1.4em;
+  font-weight: 600;
+  margin-top: var(--sf-space-6);
+  margin-bottom: var(--sf-space-3);
+  color: var(--sf-accent-primary);
+}
+
+.cm-heading-3 {
+  font-size: 1.2em;
+  font-weight: 600;
+  margin-top: var(--sf-space-5);
+  margin-bottom: var(--sf-space-2);
+  color: var(--sf-text-base);
+}
+
+.cm-heading-4 {
+  font-size: 1.1em;
+  font-weight: 600;
+  margin-top: var(--sf-space-4);
+  margin-bottom: var(--sf-space-2);
+  color: var(--sf-text-base);
+}
+
+.cm-heading-5 {
+  font-size: 1em;
+  font-weight: 600;
+  margin-top: var(--sf-space-4);
+  margin-bottom: var(--sf-space-1);
+  color: var(--sf-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cm-heading-6 {
+  font-size: 0.9em;
+  font-weight: 600;
+  margin-top: var(--sf-space-3);
+  margin-bottom: var(--sf-space-1);
+  color: var(--sf-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ==========================================================================
+   Text Formatting
+   ========================================================================== */
+
+.cm-bold {
+  font-weight: 600;
+  color: var(--sf-text-base);
+}
+
+.cm-italic {
+  font-style: italic;
+  color: var(--sf-text-base);
+}
+
+.cm-strikethrough {
+  text-decoration: line-through;
+  text-decoration-color: var(--sf-text-subtle);
+  color: var(--sf-text-subtle);
+}
+
+/* ==========================================================================
+   Inline Code
+   ========================================================================== */
+
+.cm-inline-code {
+  font-family: var(--sf-font-mono);
+  font-size: 0.875em;
+  background: var(--sf-code-bg);
+  color: var(--sf-accent-tertiary);
+  padding: var(--sf-space-1) var(--sf-space-2);
+  border-radius: var(--sf-radius-sm);
+  border: 1px solid var(--sf-border-muted);
+}
+
+/* ==========================================================================
+   Code Blocks
+   ========================================================================== */
+
+.cm-code-block {
+  font-family: var(--sf-font-mono);
+  font-size: 0.875em;
+  background: var(--sf-code-bg);
+  color: var(--sf-code-text);
+  padding: var(--sf-space-4);
+  margin: var(--sf-space-4) 0;
+  border-radius: var(--sf-radius-md);
+  border: 1px solid var(--sf-border-muted);
+  overflow-x: auto;
+  line-height: 1.5;
+}
+
+.cm-code-block code {
+  font-family: inherit;
+  font-size: inherit;
+  background: transparent;
+  padding: 0;
+  border: none;
+}
+
+/* ==========================================================================
+   Links - Shimmering Focus Style
+   ========================================================================== */
+
+.cm-link-widget {
+  color: var(--sf-accent-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  border-bottom: 1px solid transparent;
+  transition: all var(--sf-transition-fast);
+}
+
+.cm-link-widget:hover {
+  border-bottom-color: var(--sf-accent-secondary);
+}
+
+.cm-link-widget:active {
+  color: var(--sf-accent-primary);
+}
+
+/* ==========================================================================
+   Images - Enhanced with Captions
+   ========================================================================== */
+
+.cm-image-widget {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: var(--sf-space-5) auto;
+  border-radius: var(--sf-radius-md);
+  cursor: zoom-in;
+  transition: transform var(--sf-transition-base), box-shadow var(--sf-transition-base);
+}
+
+.cm-image-widget:hover {
+  transform: scale(1.01);
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--sf-bg-base) 50%, black);
+}
+
+/* Image with caption container */
+.cm-image-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: var(--sf-space-5) 0;
+}
+
+.cm-image-caption {
+  font-size: 0.875em;
+  color: var(--sf-text-subtle);
+  font-style: italic;
+  margin-top: var(--sf-space-2);
+  text-align: center;
+}
+
+/* Zoomed image state */
+.cm-image-widget.zoomed {
+  cursor: zoom-out;
+  transform: scale(1.5);
+  z-index: 100;
+  position: relative;
+}
+
+/* ==========================================================================
+   Blockquotes
+   ========================================================================== */
+
+.cm-blockquote {
+  border-left: 3px solid var(--sf-accent-primary);
+  padding-left: var(--sf-space-4);
+  margin-left: 0;
+  color: var(--sf-text-muted);
+  font-style: italic;
+}
+
+.cm-blockquote-widget {
+  border-left: 3px solid var(--sf-accent-primary);
+  padding-left: var(--sf-space-4);
+  color: var(--sf-text-muted);
+  font-style: italic;
+  display: block;
+  margin: var(--sf-space-3) 0;
+}
+
+/* ==========================================================================
+   Lists - Clean Styling
+   ========================================================================== */
+
+.cm-list-item {
+  margin-left: var(--sf-space-5);
+}
+
+/* ==========================================================================
+   Task Lists - Interactive
+   ========================================================================== */
+
+.cm-task-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sf-space-3);
+  margin: var(--sf-space-2) 0;
+  padding: var(--sf-space-1) 0;
+}
+
+.cm-task-checkbox {
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  cursor: pointer;
+  accent-color: var(--sf-accent-secondary);
+  border-radius: var(--sf-radius-sm);
+}
+
+.cm-task-checkbox:checked + .cm-task-text,
+.cm-task-checkbox:checked ~ .cm-task-text {
+  color: var(--sf-text-subtle);
+  text-decoration: line-through;
+  text-decoration-color: var(--sf-text-faint);
+}
+
+.cm-task-text {
+  flex: 1;
+  user-select: text;
+}
+
+/* ==========================================================================
+   Tables - Shimmering Focus Style
+   ========================================================================== */
+
+.cm-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--sf-space-5) 0;
+  font-size: 0.9em;
+}
+
+.cm-table th,
+.cm-table td {
+  padding: var(--sf-space-2) var(--sf-space-3);
+  text-align: left;
+  border-bottom: 1px solid var(--sf-border-muted);
+}
+
+.cm-table th {
+  font-weight: 600;
+  color: var(--sf-text-base);
+  background: var(--sf-bg-surface);
+  border-bottom: 2px solid var(--sf-border-base);
+}
+
+/* Alternating row colors */
+.cm-table tr:nth-child(even) {
+  background: var(--sf-bg-surface);
+}
+
+/* Active cell highlighting (for future implementation) */
+.cm-table td:focus,
+.cm-table td.active {
+  background: color-mix(in srgb, var(--sf-accent-secondary) 10%, transparent);
+  outline: 1px solid var(--sf-accent-secondary);
+  outline-offset: -1px;
+}
+
+/* Hover state */
+.cm-table tr:hover td {
+  background: var(--sf-bg-overlay);
+}
+
+/* ==========================================================================
+   Horizontal Rules
+   ========================================================================== */
+
+hr,
+.cm-hr {
+  border: none;
+  height: 1px;
+  background: var(--sf-border-muted);
+  margin: var(--sf-space-6) 0;
+}
+
+/* ==========================================================================
+   Scrollbars - Minimal
+   ========================================================================== */
+
+.cm-scroller::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.cm-scroller::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cm-scroller::-webkit-scrollbar-thumb {
+  background: var(--sf-bg-subtle);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.cm-scroller::-webkit-scrollbar-thumb:hover {
+  background: var(--sf-text-faint);
+  background-clip: content-box;
+}
+
+/* Firefox */
+.cm-scroller {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sf-bg-subtle) transparent;
+}
+
+/* ==========================================================================
+   Accessibility
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --sf-text-base: #ffffff;
+    --sf-text-muted: #cccccc;
+    --sf-border-base: #666666;
+  }
+
+  .cm-inline-code {
+    border-width: 2px;
+  }
+
+  .cm-blockquote {
+    border-left-width: 4px;
+  }
+
+  .cm-heading-1 {
+    border-bottom-width: 2px;
+  }
+}
+
+/* ==========================================================================
+   Responsive Design
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .cm-content {
+    padding: var(--sf-space-4);
+    max-width: 100%;
+  }
+
+  .cm-heading-1 {
+    font-size: 1.5em;
+  }
+
+  .cm-heading-2 {
+    font-size: 1.25em;
+  }
+
+  .cm-heading-3 {
+    font-size: 1.1em;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --sf-font-size: 14px;
+  }
+
+  .cm-content {
+    padding: var(--sf-space-3);
+  }
+}
+
+/* ==========================================================================
+   Print Styles
+   ========================================================================== */
+
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  .cm-editor {
+    background: white;
+  }
+
+  .cm-content {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .cm-gutters {
+    display: none;
+  }
+
+  .cm-heading {
+    color: black;
+    page-break-after: avoid;
+  }
+
+  .cm-code-block,
+  .cm-inline-code {
+    background: #f5f5f5;
+    border-color: #ccc;
+  }
+}
+
+/* ==========================================================================
+   Focus Mode (Optional Enhancement)
+   ========================================================================== */
+
+.cm-editor.focus-mode .cm-line:not(.cm-activeLine) {
+  opacity: 0.4;
+  transition: opacity var(--sf-transition-base);
+}
+
+.cm-editor.focus-mode .cm-line:hover {
+  opacity: 0.8;
+}
+
+/* ==========================================================================
+   Typewriter Mode (Optional Enhancement)
+   ========================================================================== */
+
+.cm-editor.typewriter-mode .cm-content {
+  padding-top: 45vh;
+  padding-bottom: 45vh;
+}

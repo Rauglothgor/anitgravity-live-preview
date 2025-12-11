@@ -1,0 +1,18 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "npm",
+            "script": "dev",
+            "problemMatcher": "$esbuild-watch",
+            "label": "npm: dev",
+            "isBackground": true
+        },
+        {
+            "type": "npm",
+            "script": "pretest",
+            "problemMatcher": "$tsc",
+            "label": "npm: pretest"
+        }
+    ]
+}

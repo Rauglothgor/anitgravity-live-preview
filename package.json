@@ -1,0 +1,130 @@
+{
+  "name": "obsidian-live-preview-antigravity",
+  "publisher": "antigravity",
+  "displayName": "Obsidian Live Preview for Antigravity",
+  "description": "True Obsidian-style inline markdown live preview with syntax hiding and instant rendering",
+  "version": "1.0.0",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Markdown",
+    "Formatters"
+  ],
+  "keywords": [
+    "markdown",
+    "obsidian",
+    "live-preview",
+    "wysiwyg",
+    "editor"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "obsidian-live-preview.enable",
+        "title": "Enable Obsidian Live Preview"
+      },
+      {
+        "command": "obsidian-live-preview.disable",
+        "title": "Disable Obsidian Live Preview"
+      },
+      {
+        "command": "obsidian-live-preview.toggle",
+        "title": "Toggle Obsidian Live Preview"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "obsidian-live-preview.toggle",
+        "key": "ctrl+shift+l",
+        "mac": "cmd+shift+l",
+        "when": "editorLangId == markdown"
+      }
+    ],
+    "configuration": [
+      {
+        "title": "Obsidian Live Preview",
+        "properties": {
+          "obsidian-live-preview.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable live preview on markdown files"
+          },
+          "obsidian-live-preview.theme": {
+            "type": "string",
+            "enum": [
+              "obsidian-dark",
+              "obsidian-light"
+            ],
+            "default": "obsidian-dark",
+            "description": "Color theme for the editor"
+          },
+          "obsidian-live-preview.debounceMs": {
+            "type": "number",
+            "default": 150,
+            "description": "Debounce time in milliseconds for parsing"
+          },
+          "obsidian-live-preview.maxFileSize": {
+            "type": "number",
+            "default": 1000000,
+            "description": "Maximum file size in bytes for live preview"
+          },
+          "obsidian-live-preview.renderImages": {
+            "type": "boolean",
+            "default": true,
+            "description": "Render inline images"
+          },
+          "obsidian-live-preview.renderMath": {
+            "type": "boolean",
+            "default": true,
+            "description": "Render LaTeX math expressions"
+          },
+          "obsidian-live-preview.syncScroll": {
+            "type": "boolean",
+            "default": true,
+            "description": "Sync scroll position between editor and content"
+          }
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run esbuild-base -- --minify",
+    "esbuild-base": "node esbuild.config.js",
+    "esbuild": "npm run esbuild-base -- --sourcemap",
+    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
+    "typecheck": "tsc --noEmit",
+    "pretest": "tsc -p tsconfig.test.json",
+    "test": "node ./out/test/runTest.js",
+    "dev": "npm run esbuild-watch"
+  },
+  "dependencies": {
+    "@codemirror/autocomplete": "^6.14.0",
+    "@codemirror/commands": "^6.3.3",
+    "@codemirror/lang-markdown": "^6.2.2",
+    "@codemirror/language": "^6.10.1",
+    "@codemirror/search": "^6.5.5",
+    "@codemirror/state": "^6.4.0",
+    "@codemirror/theme-one-dark": "^6.1.2",
+    "@codemirror/view": "^6.27.0",
+    "markdown-it": "^14.0.0"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/markdown-it": "^14.1.2",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^20.10.0",
+    "@types/vscode": "^1.95.0",
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^2.25.0",
+    "esbuild": "^0.20.0",
+    "glob": "^13.0.0",
+    "mocha": "^11.7.5",
+    "typescript": "^5.3.3"
+  }
+}
